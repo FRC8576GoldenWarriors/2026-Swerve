@@ -177,7 +177,11 @@ public class ModuleIOSpark implements ModuleIO {
         tryUntilOk(
                 turnSpark,
                 5,
-                () -> turnEncoder.setPosition(absoluteTurnEncoder.getAbsolutePosition().getValue().in(Radians)));
+                () -> turnEncoder.setPosition(
+                        absoluteTurnEncoder.getAbsolutePosition()
+                        .asSupplier()
+                        .get()
+                        .in(Radians)));
         // Create odometry queues
         timestampQueue = SparkOdometryThread.getInstance().makeTimestampQueue();
         drivePositionQueue = SparkOdometryThread.getInstance().registerSignal(driveSpark, driveEncoder::getPosition);

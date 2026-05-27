@@ -40,36 +40,38 @@ public class AlertLogger {
   /** Log the current state of all alerts as outputs. */
   public static void periodic() {
     if (groups == null) return;
-    for (String group : groups.keySet()) {
-      Logger.recordOutput(group + "/.type", "Alerts");
+    synchronized(groups) {
+      for (String group : groups.keySet()) {
+        Logger.recordOutput(group + "/.type", "Alerts");
 
-      // Create NetworkTables subscribers
-      if (!errorSubscribers.containsKey(group)) {
-        errorSubscribers.put(
-            group,
-            NetworkTableInstance.getDefault()
-                .getStringArrayTopic("/SmartDashboard/" + group + "/errors")
-                .subscribe(new String[0]));
-      }
-      if (!warningSubscribers.containsKey(group)) {
-        warningSubscribers.put(
-            group,
-            NetworkTableInstance.getDefault()
-                .getStringArrayTopic("/SmartDashboard/" + group + "/warnings")
-                .subscribe(new String[0]));
-      }
-      if (!infoSubscribers.containsKey(group)) {
-        infoSubscribers.put(
-            group,
-            NetworkTableInstance.getDefault()
-                .getStringArrayTopic("/SmartDashboard/" + group + "/infos")
-                .subscribe(new String[0]));
-      }
+        // Create NetworkTables subscribers
+        if (!errorSubscribers.containsKey(group)) {
+          errorSubscribers.put(
+              group,
+              NetworkTableInstance.getDefault()
+                  .getStringArrayTopic("/SmartDashboard/" + group + "/errors")
+                  .subscribe(new String[0]));
+        }
+        if (!warningSubscribers.containsKey(group)) {
+          warningSubscribers.put(
+              group,
+              NetworkTableInstance.getDefault()
+                  .getStringArrayTopic("/SmartDashboard/" + group + "/warnings")
+                  .subscribe(new String[0]));
+        }
+        if (!infoSubscribers.containsKey(group)) {
+          infoSubscribers.put(
+              group,
+              NetworkTableInstance.getDefault()
+                  .getStringArrayTopic("/SmartDashboard/" + group + "/infos")
+                  .subscribe(new String[0]));
+        }
 
-      // Get values
-      Logger.recordOutput(group + "/errors", errorSubscribers.get(group).get());
-      Logger.recordOutput(group + "/warnings", warningSubscribers.get(group).get());
-      Logger.recordOutput(group + "/infos", infoSubscribers.get(group).get());
+        // Get values
+        Logger.recordOutput(group + "/errors", errorSubscribers.get(group).get());
+        Logger.recordOutput(group + "/warnings", warningSubscribers.get(group).get());
+        Logger.recordOutput(group + "/infos", infoSubscribers.get(group).get());
+      }
     }
   }
 }

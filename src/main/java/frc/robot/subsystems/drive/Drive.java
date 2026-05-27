@@ -104,7 +104,7 @@ public class Drive extends SubsystemBase implements Vision.VisionConsumer {
             kinematics,
             rawGyroRotation,
             lastModulePositions,
-            (DriverStation.getAlliance().get() == Alliance.Blue) ? new Pose2d(new Translation2d(3,3),Rotation2d.kZero) : FlippingUtil.flipFieldPose(new Pose2d(new Translation2d(3,3), Rotation2d.kZero)),
+            (DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue) ? new Pose2d(new Translation2d(3,3),Rotation2d.kZero) : FlippingUtil.flipFieldPose(new Pose2d(new Translation2d(3,3), Rotation2d.kZero)),
             VecBuilder.fill(DriveConstants.baseXDriveSTDEV, DriveConstants.baseYDriveSTDEV, DriveConstants.baseThetaDriveSTDEV),
             VecBuilder.fill(DriveConstants.baseXVisionSTDEV, DriveConstants.baseYVisionSTDEV, DriveConstants.baseThetaVisionSTDEV));
 
@@ -481,13 +481,19 @@ public class Drive extends SubsystemBase implements Vision.VisionConsumer {
     }
 
     public Command driveToPose(Pose2d wantedPose){
-        Pathfinding.setStartPosition(getPose().getTranslation());
-        return new DeferredCommand(() ->AutoBuilder.pathfindToPose(wantedPose, new PathConstraints(2.5, 3, 2, 3)),Set.of(this));
+        return new DeferredCommand(() -> {
+            Pathfinding.setStartPosition(getPose().getTranslation());
+            return AutoBuilder.pathfindToPose(wantedPose, new PathConstraints(2.5, 3, 2, 3));
+        },
+        Set.of(this));
     }
 
     public Command driveToPose(Pose2d wantedPose, PathConstraints constraints){
-        Pathfinding.setStartPosition(getPose().getTranslation());
-        return new DeferredCommand(() ->AutoBuilder.pathfindToPose(wantedPose, constraints),Set.of(this));
+        return new DeferredCommand(() ->
+        {
+            Pathfinding.setStartPosition(getPose().getTranslation());
+            return AutoBuilder.pathfindToPose(wantedPose, constraints);
+        },Set.of(this));
     }
 
 

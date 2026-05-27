@@ -378,7 +378,7 @@ public class EnhancedSwervePoseEstimator {
      * @param wheelPositions The current encoder readings.
      * @return The estimated pose of the robot in meters.
      */
-    public Pose2d update(Rotation2d gyroAngle, SwerveModulePosition[] wheelPositions) {
+    public synchronized Pose2d update(Rotation2d gyroAngle, SwerveModulePosition[] wheelPositions) {
         return updateWithTime(MathSharedStore.getTimestamp(), gyroAngle, wheelPositions);
     }
 
@@ -390,7 +390,7 @@ public class EnhancedSwervePoseEstimator {
      * @param wheelPositions The current encoder readings.
      * @return The estimated pose of the robot in meters.
      */
-    public Pose2d updateWithTime(
+    public synchronized Pose2d updateWithTime(
             double currentTimeSeconds, Rotation2d gyroAngle, SwerveModulePosition[] wheelPositions) {
         if (wheelPositions.length != m_numModules) {
             throw new IllegalArgumentException(
