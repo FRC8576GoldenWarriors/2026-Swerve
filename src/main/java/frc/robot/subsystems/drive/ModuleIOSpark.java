@@ -13,17 +13,20 @@
 
 package frc.robot.subsystems.drive;
 
+import static edu.wpi.first.units.Units.Radians;
 import static frc.robot.subsystems.drive.DriveConstants.*;
 import static frc.robot.util.SparkUtil.*;
 
 import com.ctre.phoenix6.hardware.CANcoder;
+import com.revrobotics.PersistMode;
 import com.revrobotics.RelativeEncoder;
+import com.revrobotics.ResetMode;
 import com.revrobotics.spark.ClosedLoopSlot;
 import com.revrobotics.spark.FeedbackSensor;
 import com.revrobotics.spark.SparkBase;
 import com.revrobotics.spark.SparkBase.ControlType;
-import com.revrobotics.spark.SparkBase.PersistMode;
-import com.revrobotics.spark.SparkBase.ResetMode;
+
+
 import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkClosedLoopController.ArbFFUnits;
 import com.revrobotics.spark.SparkFlex;
@@ -33,10 +36,8 @@ import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkFlexConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.util.Units;
 import java.util.Queue;
 import java.util.function.DoubleSupplier;
 
@@ -56,7 +57,7 @@ public class ModuleIOSpark implements ModuleIO {
 
     // Closed loop controllers
     private final SparkClosedLoopController driveController;
-    private final PIDController turnController;
+    private final SparkClosedLoopController turnController;
 
     // Queue inputs from odometry thread
     private final Queue<Double> timestampQueue;
@@ -95,7 +96,7 @@ public class ModuleIOSpark implements ModuleIO {
         driveEncoder = driveSpark.getEncoder();
         turnEncoder = turnSpark.getEncoder();
         driveController = driveSpark.getClosedLoopController();
-        turnController = new PIDController(DriveConstants.turnKp, 0, DriveConstants.turnKd);
+        turnController = turnSpark.getClosedLoopController();
         absoluteTurnEncoder = new CANcoder(
                 switch (module) {
                     case 0 -> frontLeftCancoderId;
@@ -121,9 +122,10 @@ public class ModuleIOSpark implements ModuleIO {
         driveConfig
                 .closedLoop
                 .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
-                .pidf(
-                        driveKp, 0.0,
-                        driveKd, 0.0);
+                .pid(
+                        driveKp,
+                        0.0,
+                        driveKd);
         driveConfig
                 .signals
                 .primaryEncoderPositionAlwaysOn(true)
@@ -154,10 +156,10 @@ public class ModuleIOSpark implements ModuleIO {
                 .uvwAverageDepth(2);
         turnConfig
                 .closedLoop
-                .feedbackSensor(FeedbackSensor.kAbsoluteEncoder)
+                .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
                 .positionWrappingEnabled(true)
                 .positionWrappingInputRange(turnPIDMinInput, turnPIDMaxInput)
-                .pidf(turnKp, 0.0, turnKd, 0.0);
+                .pid(turnKp, 0.0, turnKd);
         turnConfig
                 .signals
                 .primaryEncoderPositionAlwaysOn(true)
@@ -175,8 +177,7 @@ public class ModuleIOSpark implements ModuleIO {
         tryUntilOk(
                 turnSpark,
                 5,
-                () -> turnEncoder.setPosition(Units.rotationsToRadians(
-                        absoluteTurnEncoder.getAbsolutePosition().getValueAsDouble())));
+                () -> turnEncoder.setPosition(absoluteTurnEncoder.getAbsolutePosition().getValue().in(Radians)));
         // Create odometry queues
         timestampQueue = SparkOdometryThread.getInstance().makeTimestampQueue();
         drivePositionQueue = SparkOdometryThread.getInstance().registerSignal(driveSpark, driveEncoder::getPosition);
@@ -240,16 +241,15 @@ public class ModuleIOSpark implements ModuleIO {
     @Override
     public void setDriveVelocity(double velocityRadPerSec) {
         double ffVolts = driveKs * Math.signum(velocityRadPerSec) + driveKv * velocityRadPerSec;
-        driveController.setReference(
+        driveController.setSetpoint(
                 velocityRadPerSec, ControlType.kVelocity, ClosedLoopSlot.kSlot0, ffVolts, ArbFFUnits.kVoltage);
     }
 
     @Override
     public void setTurnPosition(Rotation2d rotation) {
-
         double setpoint =
-                MathUtil.inputModulus(rotation.plus(zeroRotation).getRadians(), turnPIDMinInput, turnPIDMaxInput);
-        // double ffVolts = turnKs * Math.signum(setpoint) + turnKv * setpoint;
-        setTurnOpenLoop(turnController.calculate(turnEncoder.getPosition(), setpoint)); // + ffVolts);
+                MathUtil.inputModulus(
+                rotation.plus(zeroRotation).getRadians(), turnPIDMinInput, turnPIDMaxInput);
+        turnController.setSetpoint(setpoint, ControlType.kPosition);
     }
 }

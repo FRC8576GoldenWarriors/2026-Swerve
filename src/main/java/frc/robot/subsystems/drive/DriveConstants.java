@@ -14,24 +14,30 @@
 package frc.robot.subsystems.drive;
 
 import static edu.wpi.first.units.Units.*;
-import static frc.robot.subsystems.drive.DriveConstants.module_average_kA_Drive;
-import static frc.robot.subsystems.drive.DriveConstants.module_average_kA_Turn;
 
 import com.pathplanner.lib.config.ModuleConfig;
 import com.pathplanner.lib.config.RobotConfig;
+
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.Frequency;
+
 import org.ironmaple.simulation.drivesims.COTS;
 import org.ironmaple.simulation.drivesims.configs.DriveTrainSimulationConfig;
 import org.ironmaple.simulation.drivesims.configs.SwerveModuleSimulationConfig;
+import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
 
 public class DriveConstants {
     public static final double maxSpeedMetersPerSec = 4.3; // 5.3; // 4.8;
     public static final double odometryFrequency = 250.0; // Hz
-    public static final double trackWidth = Units.inchesToMeters(25);
-    public static final double wheelBase = Units.inchesToMeters(25);
+    public static final double trackWidth = Units.inchesToMeters(21.75);
+    public static final double wheelBase = Units.inchesToMeters(21.75);
+    public static final LoggedNetworkNumber angularVelocityCoefficient = new LoggedNetworkNumber("Drive/angularVelocityCoefficient", 0.1);
+    public static final boolean useChasisDiscretize = false;
+    public static final boolean useAngularVelocitySkewCorrection = true;
     public static final double driveBaseRadius = Math.sqrt((Math.pow(trackWidth, 2) + Math.pow(wheelBase, 2)))
             / 2.0; // Math.hypot(trackWidth / 2.0, wheelBase / 2.0);
     // kevin pfeffer was here
@@ -44,11 +50,12 @@ public class DriveConstants {
 
     // Zeroed rotation values for each module, see setup instructions
     public static final Rotation2d frontLeftZeroRotation =
-            Rotation2d.fromRotations(0.331787); // -0.143311); // new Rotation2d(0.0);
-    public static final Rotation2d frontRightZeroRotation = Rotation2d.fromRotations(-0.313965); // 0.204834);
+            Rotation2d.fromRotations(-0.337891);//-0.337891);//-0.338867);//0.158936);//0.031982);//0.151367 );//(0.331787); // -0.143311); // new Rotation2d(0.0);
+    public static final Rotation2d frontRightZeroRotation = Rotation2d.fromRotations(0.418457);//0.424072);//-0.130615);//-0.129639);//0.370850);//0.367432);//0.367188 );//(-0.313965); // 0.204834);
     public static final Rotation2d backLeftZeroRotation =
-            Rotation2d.fromRotations(0.478760); // 0.464355); // 0.453857);
-    public static final Rotation2d backRightZeroRotation = Rotation2d.fromRotations(0.176025); // 0.171875);
+            Rotation2d.fromRotations(0.471680);//0.471680);//-0.046875);//-0.049072);//0.459961);//-0.192871);//(0.478760); // 0.464355); // 0.453857);
+    public static final Rotation2d backRightZeroRotation = Rotation2d.fromRotations(-0.199951);//-0.199951);//-0.206299);//0.306641);//0.308350);//0.449219 );//(0.176025); // 0.171875);
+    public static final double gyroTrimDegreesPerRotation = -4.45;
 
     // Device CAN IDs
     public static final int pigeonCanId = 0;
@@ -70,7 +77,7 @@ public class DriveConstants {
 
     // Drive motor configuration
     public static final int driveMotorCurrentLimit = 40;
-    public static final double wheelRadiusMeters = 0.051; // In Meters     //Units.inchesToMeters(2);
+    public static final double wheelRadiusMeters = 0.048;//0.049;//0.059;//0.051; // In Meters     //Units.inchesToMeters(2);
     public static final double driveMotorReduction =
             6.75; //     (45.0 * 22.0) / (14.0 * 15.0); // MAXSwerve with 14 pinion teeth and 22 spur teeth
     public static final DCMotor driveGearbox = DCMotor.getNeoVortex(1);
@@ -81,8 +88,9 @@ public class DriveConstants {
     public static final double driveEncoderVelocityFactor =
             (2 * Math.PI) / 60.0 / driveMotorReduction; // Rotor RPM -> Wheel Rad/Sec
 
+        public static final double maxSpeedRPM = maxSpeedMetersPerSec/(2*Math.PI*wheelRadiusMeters)*60;
     // Drive PID configuration
-    public static final double driveKp = 0.008; // 0.0;
+    public static final double driveKp = 0.001;//0.004;//0.008; // 0.0;
     public static final double driveKd = 0.0;
     public static final double driveKs = 0.21962; // 0.19416; // 0; // 0.17266; // 0.0;
     public static final double driveKv = 0.13561; // 0.13421; // 0; // 0.14037; // .135; // .12; // .15; // 0.1;
@@ -93,7 +101,7 @@ public class DriveConstants {
 
     // Turn motor configuration
     public static final boolean turnInverted = true;
-    public static final int turnMotorCurrentLimit = 20;
+    public static final int turnMotorCurrentLimit = 40;
     public static final double turnMotorReduction = 150.0 / 7; // 9424.0 / 203.0;
     public static final DCMotor turnGearbox = DCMotor.getNeo550(1);
 
@@ -101,17 +109,18 @@ public class DriveConstants {
     public static final boolean turnEncoderInverted = true;
     public static final double turnEncoderPositionFactor = 2 * Math.PI / turnMotorReduction; // Rotations -> Radians
     public static final double turnEncoderVelocityFactor = (2 * Math.PI) / 60.0 / turnMotorReduction; // RPM -> Rad/Sec
+    public static final Frequency updateFrequency = Hertz.of(50);
 
     // kA Constants
     public static final double module_average_kA_Drive = 0.3;
     public static final double module_average_kA_Turn = 0.574665;
     // Turn PID configuration
-    public static final double turnKp = 4.0; // 2.0; // 1.6; // 0.8; // 0.575; // 0.01; // 2.0;
-    public static final double turnKd = 0.0;
+    public static final double turnKp = 8;//6;//8;//6;//4.0; // 2.0; // 1.6; // 0.8; // 0.575; // 0.01; // 2.0;
+    public static final double turnKd = 0.008;
     public static final double turnSimP = 8.0;
-    public static final double turnSimD = 0.0;
-    public static final double turnKs = 2.44234;
-    public static final double turnKv = 0.67128;
+    public static final double turnSimD = 0;//.02;//0.04;
+    public static final double turnKs = 0;//2.44234;
+    public static final double turnKv = 0;//0.67128;
     public static final double turnPIDMinInput = 0; // Radians
     public static final double turnPIDMaxInput = 2 * Math.PI; // Radians
     public static final double angularKa = 0;
@@ -146,6 +155,21 @@ public class DriveConstants {
                     Meters.of(wheelRadiusMeters),
                     KilogramSquareMeters.of(0.02),
                     wheelCOF));
+
+    public static final double skidThresholdX = 0.1;//0.035;//0.03;
+    public static final double skidThresholdY = 0.1;//0.029;//0.029
+
+    public static final double baseXDriveSTDEV = 0.0666;
+    public static final double baseYDriveSTDEV = 0.1162;
+    public static final double baseThetaDriveSTDEV = Units.degreesToRadians(0.001);
+
+    public static final double baseXVisionSTDEV = 0.1;
+    public static final double baseYVisionSTDEV = 0.1;
+    public static final double baseThetaVisionSTDEV = 999999;
+
+    public static final Angle pitchGyroZero = Degrees.of(0.527334);
+    public static final Angle rollGyroZero = Degrees.of(0);
+    //public static final AprilTagFieldLayout layout = AprilTagFieldLayout.loadField(AprilTagFields.)
 
     // Module 1 Drive kA = 0.016577;
     // Module 2 Drive kA = 0.019138;
