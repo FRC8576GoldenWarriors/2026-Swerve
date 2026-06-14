@@ -18,6 +18,7 @@ import static edu.wpi.first.units.Units.*;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
@@ -29,7 +30,6 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.DriveCommands;
-import frc.robot.commands.DriveX;
 import frc.robot.subsystems.drive.*;
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
@@ -123,7 +123,7 @@ public class RobotContainer {
      */
     private void configureButtonBindings() {
         // Default command, normal field-relative drive
-        drive.setDefaultCommand(DriveCommands.joystickDrive(
+        drive.setDefaultCommand(DriveCommands.joystickAdvancedDrive(
                 drive, () -> -controller.getLeftY(), () -> -controller.getLeftX(), () -> -controller.getRightX()));
 
         // Lock to 0° when A button is held
@@ -183,7 +183,15 @@ public class RobotContainer {
                     (DriverStation.getAlliance().get() == Alliance.Red) ? Rotation2d.k180deg : Rotation2d.kZero);
             drive.resetGyro(resetPose);
         }));
-        controller.povDown().onTrue(new DriveX(drive, .5).withTimeout(8));
+        controller.povDown().onTrue(
+                DriveCommands.driveX(
+                        drive,
+                        () -> ChassisSpeeds.fromRobotRelativeSpeeds(
+                                MetersPerSecond.of(.5),
+                                MetersPerSecond.of(0),
+                                RadiansPerSecond.of(0),
+                                Rotation2d.kZero),
+                                Seconds.of(8)));
     }
 
     /**
