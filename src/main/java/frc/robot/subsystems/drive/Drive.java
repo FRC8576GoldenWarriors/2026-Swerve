@@ -58,6 +58,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.Constants.Mode;
 import frc.robot.subsystems.vision.Vision;
+import frc.robot.util.AllianceUtil;
 import frc.robot.util.LocalADStarAK;
 import frc.robot.util.PoseEstimation.EnhancedSwervePoseEstimator;
 
@@ -104,7 +105,7 @@ public class Drive extends SubsystemBase implements Vision.VisionConsumer {
             kinematics,
             rawGyroRotation,
             lastModulePositions,
-            (DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue) ? new Pose2d(new Translation2d(3,3),Rotation2d.kZero) : FlippingUtil.flipFieldPose(new Pose2d(new Translation2d(3,3), Rotation2d.kZero)),
+            (AllianceUtil.onBlueAlliance()) ? new Pose2d(new Translation2d(3,3),Rotation2d.kZero) : FlippingUtil.flipFieldPose(new Pose2d(new Translation2d(3,3), Rotation2d.kZero)),
             VecBuilder.fill(DriveConstants.baseXDriveSTDEV, DriveConstants.baseYDriveSTDEV, DriveConstants.baseThetaDriveSTDEV),
             VecBuilder.fill(DriveConstants.baseXVisionSTDEV, DriveConstants.baseYVisionSTDEV, DriveConstants.baseThetaVisionSTDEV));
 
@@ -305,7 +306,7 @@ public class Drive extends SubsystemBase implements Vision.VisionConsumer {
 
         public void runAutonVelocity(ChassisSpeeds speeds) {
         // Calculate module setpoints
-        if(DriverStation.getAlliance().orElse(Alliance.Blue)==Alliance.Red){
+        if(AllianceUtil.onRedAlliance()){
             speeds = new ChassisSpeeds(-speeds.vxMetersPerSecond,-speeds.vyMetersPerSecond,speeds.omegaRadiansPerSecond);
         }
         Logger.recordOutput("SwerveStates/Chassis Speeds", speeds);

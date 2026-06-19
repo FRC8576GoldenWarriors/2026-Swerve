@@ -32,7 +32,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveConstants;
-
+import frc.robot.util.AllianceUtil;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -104,8 +104,7 @@ public class DriveCommands {
                             linearVelocity.getX() * drive.getMaxLinearSpeedMetersPerSec(),
                             linearVelocity.getY() * drive.getMaxLinearSpeedMetersPerSec(),
                             omega * drive.getMaxAngularSpeedRadPerSec());
-                    boolean isFlipped = DriverStation.getAlliance().isPresent()
-                            && DriverStation.getAlliance().get() == Alliance.Red;
+                    boolean isFlipped = AllianceUtil.shouldFlip();
                     speeds = ChassisSpeeds.fromFieldRelativeSpeeds(
                             speeds,
                             isFlipped ? drive.getRotation().plus(new Rotation2d(Math.PI)) : drive.getRotation());
@@ -134,8 +133,7 @@ public class DriveCommands {
                             linearVelocity.getX() * drive.getMaxLinearSpeedMetersPerSec(),
                             linearVelocity.getY() * drive.getMaxLinearSpeedMetersPerSec(),
                             omega * drive.getMaxAngularSpeedRadPerSec());
-                    boolean isFlipped = DriverStation.getAlliance().isPresent()
-                            && DriverStation.getAlliance().get() == Alliance.Red;
+                    boolean isFlipped = AllianceUtil.shouldFlip();
                     speeds = ChassisSpeeds.fromFieldRelativeSpeeds(
                             speeds,
                             isFlipped ? drive.getRotation().plus(new Rotation2d(Math.PI)) : drive.getRotation());
@@ -176,8 +174,7 @@ public class DriveCommands {
                                     linearVelocity.getX() * drive.getMaxLinearSpeedMetersPerSec(),
                                     linearVelocity.getY() * drive.getMaxLinearSpeedMetersPerSec(), //* Math.abs(omega) * Math.abs(linearVelocity.getX()) * turnCorrection.get(),
                                     omega);
-                            boolean isFlipped = DriverStation.getAlliance().isPresent()
-                                    && DriverStation.getAlliance().get() == Alliance.Red;
+                            boolean isFlipped = AllianceUtil.shouldFlip();
                             speeds = ChassisSpeeds.fromFieldRelativeSpeeds(
                                     speeds,
                                     isFlipped
@@ -232,8 +229,7 @@ public class DriveCommands {
                                 linearVelocity.getY() * drive.getMaxLinearSpeedMetersPerSec(),
                                 omega);
 
-                        boolean isFlipped = DriverStation.getAlliance().isPresent()
-                                && DriverStation.getAlliance().get() == Alliance.Red;
+                        boolean isFlipped = AllianceUtil.shouldFlip();
 
                         speeds = ChassisSpeeds.fromFieldRelativeSpeeds(
                                 speeds,
@@ -288,8 +284,7 @@ public class DriveCommands {
                                 linearVelocity.getY() * drive.getMaxLinearSpeedMetersPerSec(),
                                 omega);
 
-                        boolean isFlipped = DriverStation.getAlliance().isPresent()
-                                && DriverStation.getAlliance().get() == Alliance.Red;
+                        boolean isFlipped = AllianceUtil.shouldFlip();
 
                         speeds = ChassisSpeeds.fromFieldRelativeSpeeds(
                                 speeds,

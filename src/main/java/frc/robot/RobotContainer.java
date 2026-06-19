@@ -31,6 +31,8 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.DriveCommands;
 import frc.robot.subsystems.drive.*;
+import frc.robot.util.AllianceUtil;
+
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.ironmaple.simulation.seasonspecific.reefscape2025.ReefscapeCoralOnFly;
@@ -172,7 +174,7 @@ public class RobotContainer {
             Pose2d currentPose = drive.getPose();
             Pose2d resetPose = new Pose2d(
                     new Translation2d(currentPose.getX(), currentPose.getY()),
-                    (DriverStation.getAlliance().get() == Alliance.Red) ? Rotation2d.k180deg : Rotation2d.kZero);
+                    (AllianceUtil.onRedAlliance()) ? Rotation2d.k180deg : Rotation2d.kZero);
             drive.resetGyro(resetPose);
         }));
         controller.povUp().onTrue(new InstantCommand(() -> {
@@ -180,7 +182,7 @@ public class RobotContainer {
                     new Translation2d(
                             0 + Units.inchesToMeters(29 / 2) + Units.inchesToMeters(13 / 4),
                             Units.inchesToMeters(49.674) + Units.inchesToMeters(29 / 2) + Units.inchesToMeters(13 / 4)),
-                    (DriverStation.getAlliance().get() == Alliance.Red) ? Rotation2d.k180deg : Rotation2d.kZero);
+                    (AllianceUtil.onRedAlliance()) ? Rotation2d.k180deg : Rotation2d.kZero);
             drive.resetGyro(resetPose);
         }));
         controller.povDown().onTrue(
