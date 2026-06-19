@@ -29,7 +29,7 @@ public class AllianceUtil {
 
     private static final BooleanSupplier hasFlipped = () -> {
         Optional<Alliance> alliance = DriverStation.getAlliance();
-        return alliance.isPresent() && (alliance.get() == Alliance.Red);  
+        return alliance.isPresent() && (alliance.get() == Alliance.Red);
     };
 
     @AutoLogOutput
